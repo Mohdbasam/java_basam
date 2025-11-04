@@ -1,0 +1,1264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tap n Fix - Admin Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #1e40af;
+            --primary-dark: #1e3a8a;
+            --secondary: #10b981;
+            --accent: #f59e0b;
+            --background: #f1f5f9;
+            --sidebar: #1e293b;
+            --sidebar-hover: #334155;
+            --card: #ffffff;
+            --text: #1f2937;
+            --text-light: #64748b;
+            --text-white: #ffffff;
+            --border: #e2e8f0;
+            --danger: #ef4444;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            --gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--background);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .admin-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 280px;
+            background: var(--sidebar);
+            color: var(--text-white);
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 1000;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar.collapsed {
+            transform: translateX(-100%);
+        }
+
+        .sidebar-header {
+            padding: 2rem 1.5rem;
+            border-bottom: 1px solid var(--sidebar-hover);
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-white);
+        }
+
+        .sidebar-nav {
+            padding: 1rem 0;
+        }
+
+        .nav-section {
+            margin-bottom: 2rem;
+        }
+
+        .nav-section-title {
+            padding: 0.5rem 1.5rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-light);
+        }
+
+        .nav-item {
+            display: block;
+            padding: 0.75rem 1.5rem;
+            color: var(--text-white);
+            text-decoration: none;
+            transition: background 0.2s, padding-left 0.2s;
+            border-left: 3px solid transparent;
+            cursor: pointer;
+        }
+
+        .nav-item:hover,
+        .nav-item.active {
+            background: var(--sidebar-hover);
+            border-left-color: var(--primary);
+            padding-left: 2rem;
+        }
+
+        .nav-item i {
+            width: 20px;
+            margin-right: 0.75rem;
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: margin-left 0.3s ease;
+        }
+
+        .main-content.expanded {
+            margin-left: 0;
+        }
+
+        .top-header {
+            background: var(--card);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .sidebar-toggle {
+            background: none;
+            border: none;
+            font-size: 1.25rem;
+            color: var(--text);
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            transition: background 0.2s;
+        }
+
+        .sidebar-toggle:hover {
+            background: var(--background);
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-light);
+        }
+
+        .breadcrumb-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-left: auto;
+        }
+
+        .header-stats {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .admin-avatar {
+            width: 40px;
+            height: 40px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .admin-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            box-shadow: var(--shadow-lg);
+            min-width: 200px;
+            padding: 0.5rem 0;
+            margin-top: 0.5rem;
+        }
+
+        .admin-dropdown a {
+            display: block;
+            padding: 0.75rem 1rem;
+            text-decoration: none;
+            color: var(--text);
+            transition: background 0.2s;
+        }
+
+        .admin-dropdown a:hover {
+            background: var(--background);
+        }
+
+        .content {
+            flex: 1;
+            padding: 2rem;
+        }
+
+        .page-header {
+            margin-bottom: 2rem;
+        }
+
+        .page-title {
+            font-size: 1.875rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 0.5rem;
+        }
+
+        .page-subtitle {
+            color: var(--text-light);
+            font-size: 1rem;
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: 0.75rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--border);
+            background: var(--background);
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card-body {
+            padding: 2rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--card);
+            border-radius: 0.75rem;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            border-left: 4px solid var(--primary);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stat-card.success {
+            border-left-color: var(--success);
+        }
+
+        .stat-card.warning {
+            border-left-color: var(--warning);
+        }
+
+        .stat-card.danger {
+            border-left-color: var(--danger);
+        }
+
+        .stat-card.info {
+            border-left-color: var(--info);
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .stat-icon.primary {
+            background: var(--primary);
+        }
+
+        .stat-icon.success {
+            background: var(--success);
+        }
+
+        .stat-icon.warning {
+            background: var(--warning);
+        }
+
+        .stat-icon.danger {
+            background: var(--danger);
+        }
+
+        .stat-icon.info {
+            background: var(--info);
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-text {
+            color: var(--text-light);
+            font-size: 0.875rem;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table th,
+        .table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .table th {
+            background: var(--background);
+            font-weight: 600;
+            color: var(--text);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .table td {
+            color: var(--text);
+        }
+
+        .table tbody tr:hover {
+            background: var(--background);
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .badge-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge-assigned {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .badge-inprogress {
+            background: #e0e7ff;
+            color: #5b21b6;
+        }
+
+        .badge-completed {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge-rejected {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .badge-active {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: var(--primary);
+            color: white;
+            text-decoration: none;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.875rem;
+        }
+
+        .btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.75rem;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .filters {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .search-box {
+            position: relative;
+            min-width: 300px;
+        }
+
+        .search-box input {
+            padding-left: 2.5rem;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-light);
+        }
+
+        .form-input,
+        .form-select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            background: var(--card);
+        }
+
+        .form-input:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+        }
+
+        .alert {
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.show {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .top-header {
+                padding: 1rem;
+            }
+
+            .content {
+                padding: 1rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header-stats {
+                display: none;
+            }
+
+            .filters {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-box {
+                min-width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="admin-layout">
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">
+                <i class="fas fa-wrench"></i>
+                <span>Tap n Fix Admin</span>
+            </div>
+        </div>
+        <div class="sidebar-nav">
+            <div class="nav-section">
+                <div class="nav-section-title">Dashboard</div>
+                <a href="#" class="nav-item active" onclick="showDashboard()">
+                    <i class="fas fa-tachometer-alt"></i>
+                    Overview
+                </a>
+            </div>
+            <div class="nav-section">
+                <div class="nav-section-title">Request Management</div>
+                <a href="#" class="nav-item" onclick="showRequests()">
+                    <i class="fas fa-list-alt"></i>
+                    All Requests
+                </a>
+                <a href="#" class="nav-item" onclick="showPendingRequests()">
+                    <i class="fas fa-clock"></i>
+                    Pending Requests
+                </a>
+                <a href="#" class="nav-item" onclick="showActiveRequests()">
+                    <i class="fas fa-play"></i>
+                    Active Requests
+                </a>
+            </div>
+            <div class="nav-section">
+                <div class="nav-section-title">User Management</div>
+                <a href="#" class="nav-item" onclick="showUsers()">
+                    <i class="fas fa-users"></i>
+                    All Users
+                </a>
+            </div>
+            <div class="nav-section">
+                <div class="nav-section-title">System</div>
+                <a href="#" class="nav-item" onclick="showSettings()">
+                    <i class="fas fa-cog"></i>
+                    Settings
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-content" id="main-content">
+        <header class="top-header">
+            <div class="header-left">
+                <button class="sidebar-toggle" onclick="toggleSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="breadcrumb" id="breadcrumb">
+                    <div class="breadcrumb-item">
+                        <i class="fas fa-home"></i>
+                        <span>Dashboard</span>
+                    </div>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="header-stats" id="header-stats">
+                    <div class="stat-item">
+                        <div class="stat-value">{{ active_requests|default:0 }}</div>
+                        <div class="stat-label">Active</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">{{ pending_requests|default:0 }}</div>
+                        <div class="stat-label">Pending</div>
+                    </div>
+                </div>
+                <div class="admin-avatar" onclick="toggleAdminDropdown()">
+                    {{ user.first_name|slice:":1"|upper }}
+                    <div class="admin-dropdown hidden" id="user-profile-dropdown">
+                        <a href="#"><i class="fas fa-user"></i> Profile</a>
+                        <a href="#"><i class="fas fa-cog"></i> Settings</a>
+                        <a href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="content" id="content">
+            {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                <i class="fas fa-{% if message.tags == 'success' %}check-circle{% else %}exclamation-circle{% endif %}"></i>
+                {{ message }}
+            </div>
+            {% endfor %}
+            {% endif %}
+
+            <div id="dashboard-overview" class="fade-in">
+                <div class="page-header">
+                    <h1 class="page-title">Dashboard Overview</h1>
+                    <p class="page-subtitle">Monitor and manage your vehicle emergency support system</p>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card primary">
+                        <div class="stat-header">
+                            <div>
+                                <div class="stat-number">{{ total_requests|default:0 }}</div>
+                                <div class="stat-text">Total Requests</div>
+                            </div>
+                            <div class="stat-icon primary">
+                                <i class="fas fa-clipboard-list"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stat-card warning">
+                        <div class="stat-header">
+                            <div>
+                                <div class="stat-number">{{ pending_requests|default:0 }}</div>
+                                <div class="stat-text">Pending Requests</div>
+                            </div>
+                            <div class="stat-icon warning">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stat-card info">
+                        <div class="stat-header">
+                            <div>
+                                <div class="stat-number">{{ total_users|default:0 }}</div>
+                                <div class="stat-text">Total Users</div>
+                            </div>
+                            <div class="stat-icon info">
+                                <i class="fas fa-users"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stat-card success">
+                        <div class="stat-header">
+                            <div>
+                                <div class="stat-number">{{ completed_requests|default:0 }}</div>
+                                <div class="stat-text">Completed</div>
+                            </div>
+                            <div class="stat-icon success">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-bottom: 2rem;">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-activity"></i>
+                            Recent Activity
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-container">
+                            <table class="table">
+                                <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>User</th>
+                                    <th>Request</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for req in recent_requests %}
+                                <tr>
+                                    <td>{{ req.request_time|date:"h:i A" }}</td>
+                                    <td>{{ req.user.first_name }}</td>
+                                    <td>{{ req.vehicle_model }} - {{ req.issue_desc|truncatewords:5 }}</td>
+                                    <td><span class="badge badge-{{ req.status|lower|cut:' ' }}">{{ req.status }}</span></td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <button class="btn btn-sm">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-light);">
+                                        No recent activity
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-users"></i>
+                            Recent Users
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-container">
+                            <table class="table">
+                                <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Requests</th>
+                                    <th>Role</th>
+                                    <th>Joined</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for user_item in users %}
+                                <tr>
+                                    <td><strong>#{{ user_item.id }}</strong></td>
+                                    <td>{{ user_item.first_name }}</td>
+                                    <td>{{ user_item.email }}</td>
+                                    <td><span style="font-weight: 600; color: var(--primary);">{{ user_item.service_requests.count }}</span></td>
+                                    <td><span class="badge badge-active">User</span></td>
+                                    <td>{{ user_item.date_joined|date:"d M Y" }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" style="text-align: center; padding: 3rem; color: var(--text-light);">
+                                        <i class="fas fa-users" style="font-size: 3rem; display: block; margin-bottom: 1rem; opacity: 0.5;"></i>
+                                        No users registered yet
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="request-management" class="hidden">
+                <div class="page-header">
+                    <h1 class="page-title">Request Management</h1>
+                    <p class="page-subtitle">Manage all breakdown assistance requests</p>
+                </div>
+
+                <div class="filters">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" class="form-input" placeholder="Search requests..." id="search-input">
+                    </div>
+                    <div class="filter-group">
+                        <label>Status:</label>
+                        <select class="form-select" id="status-filter">
+                            <option value="">All Status</option>
+                            <option value="pending">Pending</option>
+                            <option value="assigned">Assigned</option>
+                            <option value="inprogress">In Progress</option>
+                            <option value="completed">Completed</option>
+                            <option value="rejected">Rejected</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-list-alt"></i>
+                            All Requests
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-container">
+                            <table class="table">
+                                <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>User</th>
+                                    <th>Vehicle</th>
+                                    <th>Issue</th>
+                                    <th>Location</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for req in requests %}
+                                <tr data-status="{{ req.status|lower|cut:' ' }}">
+                                    <td><strong>#{{ req.id }}</strong></td>
+                                    <td>{{ req.user.first_name }}</td>
+                                    <td>{{ req.vehicle_type|title }}<br><small style="color: var(--text-light);">{{ req.vehicle_model }}</small></td>
+                                    <td>{{ req.issue_desc|truncatewords:8 }}</td>
+                                    <td>{{ req.location|truncatewords:4 }}</td>
+                                    <td><span class="badge badge-{{ req.status|lower|cut:' ' }}">{{ req.status }}</span></td>
+                                    <td>{{ req.request_time|date:"d M Y" }}<br><small style="color: var(--text-light);">{{ req.request_time|date:"h:i A" }}</small></td>
+                                    <td>
+                                        <form method="POST" action="{% url 'update_request' req.id %}" style="display: inline;">
+                                            {% csrf_token %}
+                                            <select name="status" onchange="this.form.submit()" class="form-select" style="width: auto; padding: 0.5rem;">
+                                                <option value="">Update Status</option>
+                                                <option value="Pending" {% if req.status == 'Pending' %}selected{% endif %}>Pending</option>
+                                                <option value="Assigned" {% if req.status == 'Assigned' %}selected{% endif %}>Assigned</option>
+                                                <option value="In Progress" {% if req.status == 'In Progress' %}selected{% endif %}>In Progress</option>
+                                                 <option value="Completed" {% if req.status == 'Completed' %}selected{% endif %}>Completed</option>
+                                                 <option value="Rejected" {% if req.status == 'Rejected' %}selected{% endif %}>Rejected</option>
+                                            </select>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="8" style="text-align: center; padding: 3rem; color: var(--text-light);">
+                                        <i class="fas fa-inbox" style="font-size: 3rem; display: block; margin-bottom: 1rem; opacity: 0.5;"></i>
+                                        No requests found
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+<div id="user-management" class="hidden">
+                <div class="page-header">
+                    <h1 class="page-title">User Management</h1>
+                    <p class="page-subtitle">Manage registered users and their activity</p>
+                </div>
+
+                <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); margin-bottom: 2rem;">
+                    <div class="stat-card info">
+                        <div class="stat-header">
+                            <div>
+                                <div class="stat-number">{{ total_users|default:0 }}</div>
+                                <div class="stat-text">Total Users</div>
+                            </div>
+                            <div class="stat-icon info">
+                                <i class="fas fa-users"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stat-card success">
+                        <div class="stat-header">
+                            <div>
+                                <div class="stat-number">{{ total_users|default:0 }}</div>
+                                <div class="stat-text">Active Users</div>
+                            </div>
+                            <div class="stat-icon success">
+                                <i class="fas fa-user-check"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-users"></i>
+                            All Users
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="filters" style="margin-bottom: 1.5rem;">
+                            <div class="search-box">
+                                <i class="fas fa-search"></i>
+                                <input type="text" class="form-input" placeholder="Search users..." id="user-search">
+                            </div>
+                        </div>
+                        <div class="table-container">
+                            <table class="table">
+                                <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Requests</th>
+                                    <th>Role</th>
+                                    <th>Joined</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for user_item in users %}
+                                <tr>
+                                    <td><strong>#{{ user_item.id }}</strong></td>
+                                    <td>{{ user_item.first_name }}</td>
+                                    <td>{{ user_item.email }}</td>
+                                    <td><span style="font-weight: 600; color: var(--primary);">{{ user_item.service_requests.count }}</span></td>
+                                    <td><span class="badge badge-active">User</span></td>
+                                    <td>{{ user_item.date_joined|date:"d M Y" }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="6" style="text-align: center; padding: 3rem; color: var(--text-light);">
+                                        <i class="fas fa-users" style="font-size: 3rem; display: block; margin-bottom: 1rem; opacity: 0.5;"></i>
+                                        No users registered yet
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="settings-management" class="hidden">
+                <div class="page-header">
+                    <h1 class="page-title">System Settings</h1>
+                    <p class="page-subtitle">Configure system parameters and preferences</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-cog"></i>
+                            General Settings
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <form method="POST">
+                            {% csrf_token %}
+                            <div style="max-width: 600px;">
+                                <div style="margin-bottom: 1.5rem;">
+                                    <label style="display: block; font-weight: 500; margin-bottom: 0.5rem;">System Name</label>
+                                    <input type="text" class="form-input" value="Tap n Fix" readonly>
+                                </div>
+                                <div style="margin-bottom: 1.5rem;">
+                                    <label style="display: block; font-weight: 500; margin-bottom: 0.5rem;">Max Response Time (minutes)</label>
+                                    <input type="number" class="form-input" name="max_response_time" value="30">
+                                </div>
+                                <div style="margin-bottom: 1.5rem;">
+                                    <label style="display: block; font-weight: 500; margin-bottom: 0.5rem;">Service Radius (km)</label>
+                                    <input type="number" class="form-input" name="service_radius" value="25">
+                                </div>
+                                <button type="submit" class="btn">
+                                    <i class="fas fa-save"></i>
+                                    Save Settings
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script>
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('main-content');
+
+        if (window.innerWidth <= 768) {
+            sidebar.classList.toggle('show');
+        } else {
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+        }
+    }
+
+    function toggleAdminDropdown() {
+        document.getElementById('user-profile-dropdown').classList.toggle('hidden');
+    }
+
+    document.addEventListener('click', function(event) {
+        if (!event.target.closest('.admin-avatar')) {
+            document.getElementById('user-profile-dropdown').classList.add('hidden');
+        }
+    });
+
+    function showDashboard() {
+        setActivePage('dashboard-overview');
+        const targetElement = (typeof event !== 'undefined' && event.target) ? event.target : document.querySelector('.nav-item.active');
+        setActiveNavItem(targetElement);
+        updateBreadcrumb([{icon: 'fas fa-home', text: 'Dashboard'}]);
+    }
+
+    function showRequests() {
+        setActivePage('request-management');
+        const targetElement = (typeof event !== 'undefined' && event.target) ? event.target : document.querySelector('.nav-item[onclick="showRequests()"]');
+        setActiveNavItem(targetElement);
+        updateBreadcrumb([
+            {icon: 'fas fa-home', text: 'Dashboard'},
+            {icon: 'fas fa-list-alt', text: 'Requests'}
+        ]);
+        const filter = document.getElementById('status-filter');
+        if (filter) {
+            filter.value = '';
+            filterByStatus('');
+        }
+    }
+
+    function showPendingRequests() {
+        setActivePage('request-management');
+        const targetElement = (typeof event !== 'undefined' && event.target) ? event.target : document.querySelector('.nav-item[onclick="showPendingRequests()"]');
+        setActiveNavItem(targetElement);
+        updateBreadcrumb([
+            {icon: 'fas fa-home', text: 'Dashboard'},
+            {icon: 'fas fa-clock', text: 'Pending Requests'}
+        ]);
+        setTimeout(() => {
+            const filter = document.getElementById('status-filter');
+            if (filter) {
+                filter.value = 'pending';
+                filterByStatus('pending');
+            }
+        }, 100);
+    }
+
+    function showActiveRequests() {
+        setActivePage('request-management');
+        const targetElement = (typeof event !== 'undefined' && event.target) ? event.target : document.querySelector('.nav-item[onclick="showActiveRequests()"]');
+        setActiveNavItem(targetElement);
+        updateBreadcrumb([
+            {icon: 'fas fa-home', text: 'Dashboard'},
+            {icon: 'fas fa-play', text: 'Active Requests'}
+        ]);
+        setTimeout(() => {
+            const filter = document.getElementById('status-filter');
+            if (filter) {
+                filter.value = 'assigned';
+                filterByStatus('assigned');
+            }
+        }, 100);
+    }
+
+    function showUsers() {
+        setActivePage('user-management');
+        const targetElement = (typeof event !== 'undefined' && event.target) ? event.target : document.querySelector('.nav-item[onclick="showUsers()"]');
+        setActiveNavItem(targetElement);
+        updateBreadcrumb([
+            {icon: 'fas fa-home', text: 'Dashboard'},
+            {icon: 'fas fa-users', text: 'Users'}
+        ]);
+    }
+
+    function showSettings() {
+        setActivePage('settings-management');
+        const targetElement = (typeof event !== 'undefined' && event.target) ? event.target : document.querySelector('.nav-item[onclick="showSettings()"]');
+        setActiveNavItem(targetElement);
+        updateBreadcrumb([
+            {icon: 'fas fa-home', text: 'Dashboard'},
+            {icon: 'fas fa-cog', text: 'Settings'}
+        ]);
+    }
+
+    function setActivePage(pageId) {
+        const pages = ['dashboard-overview', 'request-management', 'user-management', 'settings-management'];
+        pages.forEach(page => {
+            const element = document.getElementById(page);
+            if (element) {
+                element.classList.add('hidden');
+            }
+        });
+
+        const selectedPage = document.getElementById(pageId);
+        if (selectedPage) {
+            selectedPage.classList.remove('hidden');
+        }
+    }
+
+    function setActiveNavItem(element) {
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.classList.remove('active');
+        });
+
+        if (element) {
+            const navItem = element.closest('.nav-item');
+            if (navItem) {
+                navItem.classList.add('active');
+            }
+        }
+    }
+
+    function updateBreadcrumb(items) {
+        const breadcrumb = document.getElementById('breadcrumb');
+        breadcrumb.innerHTML = items.map((item, index) =>
+            `<div class="breadcrumb-item">
+                <i class="${item.icon}"></i>
+                <span>${item.text}</span>
+                ${index < items.length - 1 ? '<i class="fas fa-chevron-right" style="margin-left: 0.5rem; color: var(--text-light);"></i>' : ''}
+            </div>`
+        ).join('');
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('search-input');
+        const statusFilter = document.getElementById('status-filter');
+        const userSearch = document.getElementById('user-search');
+
+        if (searchInput) {
+            searchInput.addEventListener('keyup', function() {
+                filterTable(this.value, '#request-management .table tbody tr');
+            });
+        }
+
+        if (statusFilter) {
+            statusFilter.addEventListener('change', function() {
+                filterByStatus(this.value);
+            });
+        }
+
+        if (userSearch) {
+            userSearch.addEventListener('keyup', function() {
+                filterTable(this.value, '#user-management .table tbody tr');
+            });
+        }
+
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(alert => {
+            setTimeout(() => {
+                alert.style.transition = 'opacity 0.5s';
+                alert.style.opacity = '0';
+                setTimeout(() => alert.remove(), 500);
+            }, 5000);
+        });
+
+        showDashboard();
+    });
+
+    function filterTable(searchTerm, selector) {
+        const rows = document.querySelectorAll(selector);
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            const matches = text.includes(searchTerm.toLowerCase());
+            row.style.display = matches ? '' : 'none';
+        });
+    }
+
+    function filterByStatus(status) {
+        const rows = document.querySelectorAll('#request-management .table tbody tr');
+        rows.forEach(row => {
+            if (!status) {
+                row.style.display = '';
+                return;
+            }
+            const rowStatus = row.getAttribute('data-status');
+            if (rowStatus) {
+                const normalizedRowStatus = rowStatus.replace(/\s/g, '').toLowerCase();
+                const normalizedFilterStatus = status.replace(/\s/g, '').toLowerCase();
+                row.style.display = normalizedRowStatus === normalizedFilterStatus ? '' : 'none';
+            }
+        });
+    }
+
+    window.addEventListener('resize', function() {
+        if (window.innerWidth > 768) {
+            document.getElementById('sidebar').classList.remove('show');
+        }
+    });
+</script>
+</body>
+</html>
